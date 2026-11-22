@@ -1,0 +1,5 @@
+name = "flora-instructor-jobs"
+main = "worker.mjs"
+compatibility_date = "2026-11-01"
+[vars]
+ALLOWED_ORIGIN = "https://YOUR-ID.github.io"

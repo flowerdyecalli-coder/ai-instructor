@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {parse,collect} from './collector.mjs';
+assert.equal(parse({title:'수강생 모집',description:'AI 강좌',link:'https://example.org'}),null);
+assert.equal(parse({title:'AI 강사 모집',description:'',link:'javascript:alert(1)'}),null);
+const j=parse({title:'<b>서울 AI 강사 모집</b>',description:'기관명: 테스트센터 | 강의시간: 14:00~16:00 | 시간당 50,000원',link:'https://example.org/notice/1'});
+assert.equal(j.region,'서울');assert.equal(j.agency,'테스트센터');assert.equal(j.time,'14:00~16:00');assert.equal(j.pay,'시간당 50,000원');assert.equal(j.date,'원문 확인');assert.equal(j.status,'접수 여부 확인 필요');
+await assert.rejects(()=>collect({}),/검색 서비스/);
+const original=globalThis.fetch;globalThis.fetch=async()=>({ok:false,status:401});
+await assert.rejects(()=>collect({NAVER_CLIENT_ID:'test',NAVER_CLIENT_SECRET:'test'}),/전체 검색/);
+let n=0;globalThis.fetch=async()=>{n++;return n===1?{ok:false,status:500}:{ok:true,json:async()=>({items:[{title:'AI 강사 모집',description:'',link:'https://example.org/1'}]})}};
+const d=await collect({NAVER_CLIENT_ID:'test',NAVER_CLIENT_SECRET:'test'});assert.equal(d.jobs.length,1);assert.equal(d.errors.length,1);globalThis.fetch=original;console.log('검증 통과');
